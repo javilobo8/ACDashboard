@@ -197,6 +197,13 @@ namespace ACDashboard
             public float[] carCoordinates;
 
         };
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct SerialStruct
+        {
+            [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.R4, SizeConst = 16), FieldOffset(0)]
+            public UInt32[] led_color;
+        }
     }
 
 }
