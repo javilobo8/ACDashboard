@@ -44,7 +44,9 @@
   <ItemGroup>
     <Compile Include="ACClient.cs" />
     <Compile Include="ACStructs.cs" />
-    <Compile Include="NeoPixelRPM.cs" />
+    <Compile Include="Color.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="NeoPixel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerialConnection.cs" />

@@ -9,6 +9,7 @@ namespace ACDashboard
         public static byte[] structToBytes<T>(T str) where T : struct
         {
             int size = Marshal.SizeOf<T>();
+            //Console.WriteLine(size);
             byte[] arr = new byte[size];
             IntPtr ptr = Marshal.AllocHGlobal(size);
             Marshal.StructureToPtr<T>(str, ptr, true);
@@ -198,11 +199,13 @@ namespace ACDashboard
 
         };
 
-        [StructLayout(LayoutKind.Explicit)]
+        [StructLayout(LayoutKind.Explicit, Size = 64 + 8)]
         public struct SerialStruct
         {
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.R4, SizeConst = 16), FieldOffset(0)]
             public UInt32[] led_color;
+            [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 8), FieldOffset(4 * 16)] // If array [lastTypeSize * array.length]
+            public byte[] matrix;
         }
     }
 

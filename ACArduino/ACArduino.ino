@@ -1,5 +1,5 @@
 #include <Adafruit_NeoPixel.h>
-#include <math.h>
+#include <LedControlMS.h>
 
 // Serial
 #define BAUDRATE 115200
@@ -9,16 +9,25 @@
 #define NUM_LEDS 16
 #define NEO_MAX_BRIGHTNESS 32
 
+// MAX7219
+#define MATRIX_DPIN 2
+#define MATRIX_CSPIN 3
+#define MATRIX_CLKPIN 4
+#define MATRIX_INTENSITY 15
+#define MATRIX_DEVICE 0
+
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, NP_PIN, NEO_GRB + NEO_KHZ800);
+LedControl matrix_display = LedControl(MATRIX_DPIN, MATRIX_CLKPIN, MATRIX_CSPIN, 1);
 
 typedef struct
 {
 	uint32_t led_color[16];
-} ColorData;
+	byte matrix[8];
+} SerialStruct;
 
-ColorData color_data;
-const size_t packet_size = sizeof(ColorData);
-char messageBuffer[packet_size];
+SerialStruct arduino_data;
+const size_t packet_size = sizeof(SerialStruct);
+char message_buffer[packet_size];
 
 void setup() {
 	// Setup NeoPixel Strip
@@ -26,7 +35,6 @@ void setup() {
 	strip.setBrightness(NEO_MAX_BRIGHTNESS);
 	strip.clear();
 	strip.show();
-	display();
 
 	for (size_t i = 0; i < 16; i++) {
 		strip.setPixelColor(i, 255);
@@ -37,26 +45,37 @@ void setup() {
 		delay(10);
 	}
 
+	matrix_display.shutdown(MATRIX_DEVICE, false);
+	matrix_display.setIntensity(MATRIX_DEVICE, MATRIX_INTENSITY);
+	matrix_display.clearDisplay(MATRIX_DEVICE);
+
+	for (int h = 1; h >= 0; h--) {
+		for (size_t j = 0; j < 8; j++) {
+			for (size_t k = 0; k < 8; k++) {
+				matrix_display.setLed(MATRIX_DEVICE, j, k, h);
+				delay(5);
+			}
+		}
+	}
+	matrix_display.clearDisplay(MATRIX_DEVICE);
+
 	Serial.begin(BAUDRATE);
+	Serial.println(packet_size);
 }
 
 void loop() {
 	if (Serial.available() >= packet_size) {
-		Serial.readBytes(messageBuffer, packet_size);
-		memcpy(&color_data, &messageBuffer, packet_size);
-		display();
+		Serial.readBytes(message_buffer, packet_size);
+		memcpy(&arduino_data, &message_buffer, packet_size);
+
+		for (size_t i = 0; i < 16; i++) {
+			strip.setPixelColor(i, arduino_data.led_color[i]);
+		}
+		strip.show();
+
+		for (size_t i = 0; i < 8; i++) {
+			matrix_display.setRow(MATRIX_DEVICE, i, arduino_data.matrix[i]);
+		}
 	}
 }
-
-void display() {
-	printLEDStrip();
-}
-
-void printLEDStrip() {
-	for (size_t i = 0; i < 16; i++) {
-		strip.setPixelColor(i, color_data.led_color[i]);
-	}
-	strip.show();
-}
-
 

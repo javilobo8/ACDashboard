@@ -2,7 +2,7 @@
 
 namespace ACDashboard
 {
-    class NeoPixelRPM
+    class NeoPixel
     {
         public static UInt32[] NormalLayout = {
             Color.Green, Color.Green, Color.Green, Color.Yellow,
@@ -33,7 +33,7 @@ namespace ACDashboard
 
         public UInt32[] LED_BUFFER;
 
-        public NeoPixelRPM(int _totalLeds, int _maxBrightness)
+        public NeoPixel(int _totalLeds, int _maxBrightness)
         {
             totalLeds = _totalLeds;
             maxBrightness = _maxBrightness;
@@ -59,10 +59,21 @@ namespace ACDashboard
 
             for (int currentLed = 0; currentLed < totalLeds; currentLed++)
             {
+                if (ledsFactor > 0 && ledsFactor < ledMultiplier)
+                {
+                    int ledBrightnessFactor = ledsFactor % ledMultiplier;
+
+                    if (ledBrightnessFactor != 0)
+                    {
+                        int brightnessValue = (int)map(ledBrightnessFactor, 0, ledMultiplier, 0, maxBrightness);
+                        LED_BUFFER[currentLed] = Color.ChangeBrightness(Layout[currentLed], brightnessValue);
+                    }
+                }
+
                 if (currentLed < ledsToShow)
                 {
                     // Current LED
-                    LED_BUFFER[currentLed] = Layout[currentLed];
+                    LED_BUFFER[currentLed] = Color.ChangeBrightness(Layout[currentLed], maxBrightness);
 
                     // Next LED
                     if (currentLed == ledsToShow - 1 && currentLed != totalLeds - 1)
@@ -73,14 +84,13 @@ namespace ACDashboard
                         {
                             int nextLed = currentLed + 1;
                             int brightnessValue = (int) map(nextLedBrightnessFactor, 0, ledMultiplier, 0, maxBrightness);
-                            // int brightnessFactor = (nextLedBrightnessFactor * 255 / totalLeds);
                             LED_BUFFER[nextLed] = Color.ChangeBrightness(Layout[nextLed], brightnessValue);
                         }
                     }
                 }
                 else if (currentLed > ledsToShow)
                 {
-                    LED_BUFFER[currentLed] = C_BLACK;
+                    LED_BUFFER[currentLed] = Color.Black;
                 }
             }
             return LED_BUFFER;
@@ -98,11 +108,24 @@ namespace ACDashboard
             for (int currentLed = 0; currentLed < halfLeds; currentLed++)
             {
                 int oppositeLed = totalLeds - 1 - currentLed;
+
+                if (ledsFactor > 0 && ledsFactor < ledMultiplier)
+                {
+                    int ledBrightnessFactor = ledsFactor % ledMultiplier;
+
+                    if (ledBrightnessFactor != 0)
+                    {
+                        int brightnessValue = (int)map(ledBrightnessFactor, 0, ledMultiplier, 0, maxBrightness);
+                        LED_BUFFER[currentLed] = Color.ChangeBrightness(Layout[currentLed], brightnessValue);
+                        LED_BUFFER[oppositeLed] = Color.ChangeBrightness(Layout[oppositeLed], brightnessValue);
+                    }
+                }
+
                 if (currentLed < ledsToShow)
                 {
                     // Current LEDs
-                    LED_BUFFER[currentLed] = Layout[currentLed];
-                    LED_BUFFER[oppositeLed] = Layout[oppositeLed];
+                    LED_BUFFER[currentLed] = Color.ChangeBrightness(Layout[currentLed], maxBrightness);
+                    LED_BUFFER[oppositeLed] = Color.ChangeBrightness(Layout[currentLed], maxBrightness);
 
                     // Next LEDs for brightness
                     if (currentLed == ledsToShow - 1 && currentLed != (halfLeds) - 1)
@@ -122,8 +145,8 @@ namespace ACDashboard
                 }
                 else if (currentLed > ledsToShow)
                 {
-                    LED_BUFFER[currentLed] = C_BLACK;
-                    LED_BUFFER[oppositeLed] = C_BLACK;
+                    LED_BUFFER[currentLed] = Color.Black;
+                    LED_BUFFER[oppositeLed] = Color.Black;
                 }
             }
             return LED_BUFFER;

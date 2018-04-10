@@ -20,7 +20,7 @@ namespace ACDashboard
 
         static void Main(string[] args)
         {
-            serialConnection = new SerialConnection(115200, 60);
+            serialConnection = new SerialConnection(115200, 64);
             serialConnection.Connect(SerialConnection.GetArdunioPort());
             acClient = new ACClient(serialConnection);
 

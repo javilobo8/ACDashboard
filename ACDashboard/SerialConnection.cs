@@ -6,7 +6,7 @@ namespace ACDashboard
     class SerialConnection
     {
         public int BAUD_RATE = 115200;
-        public int FPS = 1;
+        public int FPS = 60;
 
         public String Port { get; set; }
         private SerialPort sp;
@@ -75,6 +75,13 @@ namespace ACDashboard
         public void Write(byte[] bytes)
         {
             if (!isConnected || !CanSend()) return;
+            //Console.WriteLine("-----BYTE-START-----");
+            //for (int i = 0; i < bytes.Length; ++i)
+            //{
+            //    if (i % 4 == 0) Console.Write("\n");
+            //    Console.Write(Convert.ToString(bytes[i], 2).PadLeft(8, '0') + " ");
+            //}
+            //Console.WriteLine("\n-----BYTE-END-------");
             sp.Write(bytes, 0, bytes.Length);
         }
 
@@ -91,7 +98,7 @@ namespace ACDashboard
 
         public void DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            //Console.Write(sp.ReadExisting());
+            Console.Write(sp.ReadExisting());
         }
     }
 }
