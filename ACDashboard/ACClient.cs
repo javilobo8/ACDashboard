@@ -13,7 +13,6 @@ namespace ACDashboard
     class ACClient
     {
         public SerialConnection serialConnection;
-
         private NeoPixelRPM neoPixelRpm;
 
         private ACStructs.SerialStruct ArduinoData = new ACStructs.SerialStruct
@@ -24,12 +23,12 @@ namespace ACDashboard
         public ACClient(SerialConnection _serialConnection)
         {
             serialConnection = _serialConnection;
-            neoPixelRpm = new NeoPixelRPM(16, 64, 0, 20000f);
+            neoPixelRpm = new NeoPixelRPM(16, 64);
         }
 
         public void PhysicsUpdated(object sender, PhysicsEventArgs e)
         {
-            ArduinoData.led_color = neoPixelRpm.CalcRGBLeds2(e.Physics.Rpms);
+            ArduinoData.led_color = neoPixelRpm.CalcOppositeLeds(e.Physics.Rpms);
             serialConnection.Write(ACStructs.structToBytes(ArduinoData));
         }
 

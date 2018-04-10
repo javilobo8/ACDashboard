@@ -4,138 +4,129 @@ namespace ACDashboard
 {
     class NeoPixelRPM
     {
-        public static UInt32 C_GREEN = 0x0000FF00;
-        public static UInt32 C_YELLOW = 0x00FFFF00;
-        public static UInt32 C_ORANGE = 0x00FF7F00;
-        public static UInt32 C_RED = 0x00FF0000;
-        public static UInt32 C_BLUE = 0x000000FF;
-        public static UInt32 C_BLACK = 0;
-
         public static UInt32[] NormalLayout = {
-            C_GREEN, C_GREEN, C_GREEN, C_YELLOW, C_YELLOW, C_YELLOW, C_ORANGE, C_ORANGE,
-            C_ORANGE, C_RED, C_RED, C_RED, C_BLUE, C_BLUE, C_BLUE, C_BLUE
+            Color.Green, Color.Green, Color.Green, Color.Yellow,
+            Color.Yellow, Color.Yellow, Color.Orange, Color.Orange,
+            Color.Orange, Color.Red, Color.Red, Color.Red,
+            Color.Blue, Color.Blue, Color.Blue, Color.Blue
         };
 
         public static UInt32[] SplitLayout = {
-            C_GREEN, C_GREEN, C_YELLOW, C_ORANGE, C_RED, C_RED, C_BLUE, C_BLUE,
-            C_BLUE, C_BLUE, C_RED, C_RED, C_ORANGE, C_YELLOW, C_GREEN, C_GREEN,
+            Color.Green, Color.Green, Color.Yellow, Color.Orange,
+            Color.Red, Color.Red, Color.Blue, Color.Blue,
+            Color.Blue, Color.Blue, Color.Red, Color.Red,
+            Color.Orange, Color.Yellow, Color.Green, Color.Green,
         };
 
         public static UInt32[] BlueLayout = {
-            C_BLUE, C_BLUE, C_BLUE, C_BLUE, C_BLUE, C_BLUE, C_BLUE, C_BLUE,
-            C_BLUE, C_BLUE, C_BLUE, C_BLUE, C_BLUE, C_BLUE, C_BLUE, C_BLUE,
+            Color.Blue, Color.Blue, Color.Blue, Color.Blue,
+            Color.Blue, Color.Blue, Color.Blue, Color.Blue,
+            Color.Blue, Color.Blue, Color.Blue, Color.Blue,
+            Color.Blue, Color.Blue, Color.Blue, Color.Blue,
         };
 
-        public int led_count;
-        public int led_mult = 16;
-        public int brightness;
-        public float rpm_min;
-        public float rpm_max;
-        public float rpm_diff;
+        public int totalLeds;
+        public int ledMultiplier = 16;
+        public int maxBrightness;
+        public float rpm_min = 0f;
+        public float rpm_max = 20000f;
+
         public UInt32[] LED_BUFFER;
 
-        public NeoPixelRPM(int _led_count, int _brightness, float _rpm_min, float _rpm_max)
+        public NeoPixelRPM(int _totalLeds, int _maxBrightness)
         {
-            led_count = _led_count;
-            brightness = _brightness;
-            rpm_min = _rpm_min;
-            rpm_max = _rpm_max;
-            rpm_diff = _rpm_max - _rpm_min;
-            LED_BUFFER = new UInt32[_led_count];
+            totalLeds = _totalLeds;
+            maxBrightness = _maxBrightness;
+            LED_BUFFER = new UInt32[_totalLeds];
         }
 
-        public float map(float s, float a1, float a2, float b1, float b2)
+        public float map(float fromValue, float fromStart, float fromEnd, float toStart, float toEnd)
         {
-            return b1 + (s - a1) * (b2 - b1) / (a2 - a1);
+            return toStart + (fromValue - fromStart) * (toEnd - toStart) / (fromEnd - fromStart);
         }
 
-        public UInt32[] CalcRGBLeds(float rpm)
+        public UInt32[] CalcLinearLeds(float rpm)
         {
-            int leds = (int)map(rpm, rpm_min, rpm_max, 0f, (float)(led_count * led_mult));
-            int leds_to_show = leds / led_mult;
+            int ledsFactor = (int) map(rpm, rpm_min, rpm_max, 0f, (float)(totalLeds * ledMultiplier));
+            int ledsToShow = ledsFactor / ledMultiplier;
+
             UInt32[] Layout = NormalLayout;
 
-            if (leds_to_show > led_count - 3)
+            if (ledsToShow > totalLeds - 3)
             {
                 Layout = BlueLayout;
             }
 
-            for (int current_led = 0; current_led < led_count; current_led++)
+            for (int currentLed = 0; currentLed < totalLeds; currentLed++)
             {
-                if (current_led < leds_to_show)
+                if (currentLed < ledsToShow)
                 {
                     // Current LED
-                    LED_BUFFER[current_led] = Layout[current_led];
+                    LED_BUFFER[currentLed] = Layout[currentLed];
 
                     // Next LED
-                    if (current_led == leds_to_show - 1 && current_led != led_count - 1)
+                    if (currentLed == ledsToShow - 1 && currentLed != totalLeds - 1)
                     {
-                        int mod = leds % led_mult;
-                        if (mod != 0)
+                        int nextLedBrightnessFactor = ledsFactor % ledMultiplier;
+
+                        if (nextLedBrightnessFactor != 0)
                         {
-                            int next_led = current_led + 1;
-                            int brightness = (mod * 255 / led_count);
-                            LED_BUFFER[next_led] = changeBrightness(Layout[next_led], brightness);
+                            int nextLed = currentLed + 1;
+                            int brightnessValue = (int) map(nextLedBrightnessFactor, 0, ledMultiplier, 0, maxBrightness);
+                            // int brightnessFactor = (nextLedBrightnessFactor * 255 / totalLeds);
+                            LED_BUFFER[nextLed] = Color.ChangeBrightness(Layout[nextLed], brightnessValue);
                         }
                     }
                 }
-                else if (current_led > leds_to_show)
+                else if (currentLed > ledsToShow)
                 {
-                    LED_BUFFER[current_led] = C_BLACK;
+                    LED_BUFFER[currentLed] = C_BLACK;
                 }
             }
             return LED_BUFFER;
         }
 
-        public UInt32[] CalcRGBLeds2(float rpm)
+        public UInt32[] CalcOppositeLeds(float rpm)
         {
-            int leds = (int)map(rpm, rpm_min, rpm_max, 0f, (float)((led_count / 2) * led_mult));
-            int leds_to_show = leds / led_mult;
+            int halfLeds = totalLeds / 2;
+
+            int ledsFactor = (int)map(rpm, rpm_min, rpm_max, 0f, (float)((halfLeds) * ledMultiplier));
+            int ledsToShow = ledsFactor / ledMultiplier;
+
             UInt32[] Layout = SplitLayout;
 
-            for (int current_led = 0; current_led < led_count / 2; current_led++)
+            for (int currentLed = 0; currentLed < halfLeds; currentLed++)
             {
-                int opposite_led = led_count - 1 - current_led;
-                if (current_led < leds_to_show)
+                int oppositeLed = totalLeds - 1 - currentLed;
+                if (currentLed < ledsToShow)
                 {
-                    // Current LED
-                    LED_BUFFER[current_led] = Layout[current_led];
-                    LED_BUFFER[opposite_led] = Layout[opposite_led];
-                    // Next LED
-                    if (current_led == leds_to_show - 1 && current_led != (led_count / 2) - 1)
+                    // Current LEDs
+                    LED_BUFFER[currentLed] = Layout[currentLed];
+                    LED_BUFFER[oppositeLed] = Layout[oppositeLed];
+
+                    // Next LEDs for brightness
+                    if (currentLed == ledsToShow - 1 && currentLed != (halfLeds) - 1)
                     {
-                        int mod = leds % led_mult;
-                        if (mod != 0)
+                        int nextLedBrightnessFactor = ledsFactor % ledMultiplier;
+                        if (nextLedBrightnessFactor != 0)
                         {
-                            int next_led = current_led + 1;
-                            int next_opposite_led = opposite_led - 1;
-                            int brightness = (mod * 255 / led_count);
-                            LED_BUFFER[next_led] = changeBrightness(Layout[next_led], brightness);
-                            LED_BUFFER[next_opposite_led] = changeBrightness(Layout[next_opposite_led], brightness);
+                            int brightnessValue = (int) map(nextLedBrightnessFactor, 0, ledMultiplier, 0, maxBrightness);
+
+                            int nextLed = currentLed + 1;
+                            LED_BUFFER[nextLed] = Color.ChangeBrightness(Layout[nextLed], brightnessValue);
+
+                            int nextOppositeLed = oppositeLed - 1;
+                            LED_BUFFER[nextOppositeLed] = Color.ChangeBrightness(Layout[nextOppositeLed], brightnessValue);
                         }
                     }
                 }
-                else if (current_led > leds_to_show)
+                else if (currentLed > ledsToShow)
                 {
-                    LED_BUFFER[current_led] = C_BLACK;
-                    LED_BUFFER[opposite_led] = C_BLACK;
+                    LED_BUFFER[currentLed] = C_BLACK;
+                    LED_BUFFER[oppositeLed] = C_BLACK;
                 }
             }
             return LED_BUFFER;
-        }
-
-        public UInt32 changeBrightness(UInt32 c, int brightness)
-        {
-            UInt32 r = (byte)(c >> 16);
-            UInt32 g = (byte)(c >> 8);
-            UInt32 b = (byte)c;
-            r = (UInt32)(r * brightness) >> 8;
-            g = (UInt32)(g * brightness) >> 8;
-            b = (UInt32)(b * brightness) >> 8;
-            UInt32 rgb = r;
-            rgb = (rgb << 8) + g;
-            rgb = (rgb << 8) + b;
-            return rgb;
         }
     }
 }
