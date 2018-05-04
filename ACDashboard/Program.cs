@@ -25,8 +25,10 @@ namespace ACDashboard
             acClient = new ACClient(serialConnection);
 
             assetoCorsa = new AssettoCorsa();
+            assetoCorsa.GraphicsInterval = 10;
             assetoCorsa.StaticInfoUpdated += acClient.StaticInfoUpdated;
             assetoCorsa.PhysicsUpdated += acClient.PhysicsUpdated;
+            assetoCorsa.GraphicsUpdated += acClient.GraphicsUpdated;
             assetoCorsa.Start();
 
             Console.ReadKey();

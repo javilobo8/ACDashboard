@@ -5,24 +5,34 @@
 #define BAUDRATE 115200
 
 // NeoPixel Stick
-#define NP_PIN 6
+#define NP_PIN 8
 #define NUM_LEDS 16
-#define NEO_MAX_BRIGHTNESS 32
+#define NEO_MAX_BRIGHTNESS 255
 
 // MAX7219
 #define MATRIX_DPIN 2
 #define MATRIX_CSPIN 3
 #define MATRIX_CLKPIN 4
-#define MATRIX_INTENSITY 15
+#define MATRIX_INTENSITY 1
 #define MATRIX_DEVICE 0
+
+
+// MAX7219
+#define DIGIT_DPIN 5
+#define DIGIT_CSPIN 6
+#define DIGIT_CLKPIN 7
+#define DIGIT_INTENSITY 1
+#define DIGIT_DEVICE 0
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, NP_PIN, NEO_GRB + NEO_KHZ800);
 LedControl matrix_display = LedControl(MATRIX_DPIN, MATRIX_CLKPIN, MATRIX_CSPIN, 1);
+LedControl digit_display = LedControl(DIGIT_DPIN, DIGIT_CLKPIN, DIGIT_CSPIN, 1);
 
 typedef struct
 {
 	uint32_t led_color[16];
 	byte matrix[8];
+	byte digit[8];
 } SerialStruct;
 
 SerialStruct arduino_data;
@@ -42,7 +52,7 @@ void setup() {
 		delay(10);
 		strip.setPixelColor(i, 0);
 		strip.show();
-		delay(10);
+		delay(5);
 	}
 
 	matrix_display.shutdown(MATRIX_DEVICE, false);
@@ -53,12 +63,26 @@ void setup() {
 		for (size_t j = 0; j < 8; j++) {
 			for (size_t k = 0; k < 8; k++) {
 				matrix_display.setLed(MATRIX_DEVICE, j, k, h);
-				delay(5);
+				delay(3);
 			}
 		}
 	}
-	matrix_display.clearDisplay(MATRIX_DEVICE);
+	matrix_display.clearDisplay(DIGIT_DEVICE);
 
+	digit_display.shutdown(DIGIT_DEVICE, false);
+	digit_display.setIntensity(DIGIT_DEVICE, DIGIT_INTENSITY);
+	digit_display.clearDisplay(DIGIT_DEVICE);
+
+	for (int h = 1; h >= 0; h--) {
+		for (size_t j = 0; j < 8; j++) {
+			for (size_t k = 0; k < 8; k++) {
+				digit_display.setLed(DIGIT_DEVICE, j, k, h);
+				delay(3);
+			}
+		}
+	}
+	digit_display.clearDisplay(DIGIT_DEVICE);
+	
 	Serial.begin(BAUDRATE);
 	Serial.println(packet_size);
 }
@@ -75,6 +99,10 @@ void loop() {
 
 		for (size_t i = 0; i < 8; i++) {
 			matrix_display.setRow(MATRIX_DEVICE, i, arduino_data.matrix[i]);
+		}
+
+		for (size_t i = 0; i < 8; i++) {
+			digit_display.setRow(DIGIT_DEVICE, i, arduino_data.digit[i]);
 		}
 	}
 }

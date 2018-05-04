@@ -199,13 +199,15 @@ namespace ACDashboard
 
         };
 
-        [StructLayout(LayoutKind.Explicit, Size = 64 + 8)]
+        [StructLayout(LayoutKind.Explicit, Size = 64 + 8 + 8)]
         public struct SerialStruct
         {
-            [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.R4, SizeConst = 16), FieldOffset(0)]
+            [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.R4, SizeConst = 16), FieldOffset(0)] // 64
             public UInt32[] led_color;
-            [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 8), FieldOffset(4 * 16)] // If array [lastTypeSize * array.length]
+            [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 8), FieldOffset(0 + 64)] // If array [lastTypeSize * array.length]
             public byte[] matrix;
+            [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 8), FieldOffset(0 + 64 + 8)] // If array [lastTypeSize * array.length]
+            public byte[] digit;
         }
     }
 

@@ -25,6 +25,13 @@ namespace ACDashboard
             Color.Blue, Color.Blue, Color.Blue, Color.Blue,
         };
 
+        public static UInt32[] BlackLayout = {
+            Color.Black, Color.Black, Color.Black, Color.Black,
+            Color.Black, Color.Black, Color.Black, Color.Black,
+            Color.Black, Color.Black, Color.Black, Color.Black,
+            Color.Black, Color.Black, Color.Black, Color.Black,
+        };
+
         public int totalLeds;
         public int ledMultiplier = 16;
         public int maxBrightness;
