@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ACDashboard
 {
@@ -35,6 +31,25 @@ namespace ACDashboard
                 {
                     isDot = true;
                 }
+            }
+
+            return data;
+        }
+
+        public byte[] ConvertFromDecimal(float number)
+        {
+            byte[] data = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, };
+            char[] chars = ((int)number).ToString().ToCharArray();
+
+            int dataIndex = 0;
+            for (int i = chars.Length - 1; i >= 0 && chars.Length != 0; i--)
+            {
+                try
+                {
+                    data[dataIndex] = Constants.NUMBERS[(int)Char.GetNumericValue(chars[i])];
+                }
+                catch { }
+                dataIndex++;
             }
 
             return data;

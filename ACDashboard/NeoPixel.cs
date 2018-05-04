@@ -25,6 +25,13 @@ namespace ACDashboard
             Color.Blue, Color.Blue, Color.Blue, Color.Blue,
         };
 
+        public static UInt32[] RedLayout = {
+            Color.Red, Color.Red, Color.Red, Color.Red,
+            Color.Red, Color.Red, Color.Red, Color.Red,
+            Color.Red, Color.Red, Color.Red, Color.Red,
+            Color.Red, Color.Red, Color.Red, Color.Red,
+        };
+
         public static UInt32[] BlackLayout = {
             Color.Black, Color.Black, Color.Black, Color.Black,
             Color.Black, Color.Black, Color.Black, Color.Black,
@@ -61,7 +68,7 @@ namespace ACDashboard
 
             if (ledsToShow > totalLeds - 3)
             {
-                Layout = BlueLayout;
+                Layout = RedLayout;
             }
 
             for (int currentLed = 0; currentLed < totalLeds; currentLed++)

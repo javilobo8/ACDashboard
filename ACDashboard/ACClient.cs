@@ -20,14 +20,15 @@ namespace ACDashboard
         private ACStructs.SerialStruct arduinoData = new ACStructs.SerialStruct
         {
             led_color = new UInt32[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            matrix = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, },
-            digit = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, },
+            matrix_0 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, },
+            digit_0 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, },
+            digit_1 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, },
         };
 
         public ACClient(SerialConnection _serialConnection)
         {
             serialConnection = _serialConnection;
-            neoPixelRpm = new NeoPixel(16, 255);
+            neoPixelRpm = new NeoPixel(16, 16);
             sevenSegment = new SevenSegment();
         }
 
@@ -39,7 +40,8 @@ namespace ACDashboard
         public void PhysicsUpdated(object sender, PhysicsEventArgs e)
         {
             arduinoData.led_color = neoPixelRpm.CalcLinearLeds(e.Physics.Rpms);
-            arduinoData.matrix = GEARS[e.Physics.Gear];
+            arduinoData.matrix_0 = GEARS[e.Physics.Gear];
+            arduinoData.digit_1 = sevenSegment.ConvertFromDecimal(e.Physics.SpeedKmh);
             serialConnection.Write(ACStructs.structToBytes(arduinoData));
         }
 
@@ -47,16 +49,11 @@ namespace ACDashboard
         {
             neoPixelRpm.rpm_max = e.StaticInfo.MaxRpm;
             neoPixelRpm.rpm_min = 74f * e.StaticInfo.MaxRpm / 100f;
-            //Update();
         }
-
 
         public void GraphicsUpdated(object sender, GraphicsEventArgs e)
         {
-            arduinoData.digit = sevenSegment.ConvertToTime(e.Graphics.CurrentTime);
-            //Utils.PrintByteArray(arduinoData.digit);
-            //Console.WriteLine(e.Graphics.CurrentTime);
-            //Update();
+            arduinoData.digit_0 = sevenSegment.ConvertToTime(e.Graphics.CurrentTime);
         }
     }
 }
